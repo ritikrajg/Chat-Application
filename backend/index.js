@@ -19,7 +19,7 @@ app.use(express.urlencoded({extended:true}));
 app.use(express.json()); 
 app.use(cookieParser());
 const corsOption={
-    origin:'http://localhost:3000',
+    origin:'https://chat-application-tjj7.onrender.com',
     credentials:true
 };
 app.use(cors(corsOption)); 
