@@ -7,6 +7,8 @@ import messageRoute from "./routes/messageRoute.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { app,server } from "./socket/socket.js";
+import path from "path";
+import { fileURLToPath } from 'url';
 dotenv.config({});
 
  
@@ -27,7 +29,13 @@ app.use(cors(corsOption));
 app.use("/api/v1/user",userRoute); 
 app.use("/api/v1/message",messageRoute);
  
-
+if(process.env.NODE_ENV === "production"){
+    const dirPath=path.resolve();
+    app.use(express.static("./frontend/dist"));
+    app.get("*",(req,res)=>{
+        res.sendFile(path.resolve(dirPath,"./frontend/dist/","index.html"));
+    })
+}
 server.listen(PORT, ()=>{
     connectDB();
     console.log(`Server listen at prot ${PORT}`);
