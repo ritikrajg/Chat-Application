@@ -1,124 +1,186 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
+import React from "react";
+import { useForm } from "react-hook-form";
 import axios from "axios";
+import { useAuth } from "../context/AuthProvider";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { BASE_URL } from '..';
+function Signup() {
+  const [authUser, setAuthUser] = useAuth();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
 
+  // watch the password and confirm password fields
+  const password = watch("password", "");
+  const confirmPassword = watch("confirmPassword", "");
+  console.log(confirmPassword);
 
-const Signup = () => {
-  const [user, setUser] = useState({
-    fullName: "",
-    username: "",
-    password: "",
-    confirmPassword: "",
-    gender: "",
-  });
-  const navigate = useNavigate();
-  const handleCheckbox = (gender) => {
-    setUser({ ...user, gender });
-  }
-  const onSubmitHandler = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post(`${BASE_URL}/api/v1/user/register`, user, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        withCredentials: true
+  const validatePasswordMatch = (value) => {
+    return value === password || "Passwords do not match";
+  };
+
+  const onSubmit = async (data) => {
+    const userInfo = {
+      fullname: data.fullname,
+      email: data.email,
+      password: data.password,
+      confirmPassword: data.confirmPassword,
+    };
+    // console.log(userInfo);
+    await axios
+      .post("/api/user/signup", userInfo)
+      .then((response) => {
+        if (response.data) {
+          toast.success("Signup successful");
+        }
+        localStorage.setItem("ChatApp", JSON.stringify(response.data));
+        setAuthUser(response.data);
+      })
+      .catch((error) => {
+        if (error.response) {
+          toast.error("Error: " + error.response.data.error);
+        }
       });
-      if (res.data.success) {
-        navigate("/login");
-        toast.success(res.data.message);
-      }
-    } catch (error) {
-      toast.error(error.response.data.message);
-      console.log(error);
-    }
-    setUser({
-      fullName: "",
-      username: "",
-      password: "",
-      confirmPassword: "",
-      gender: "",
-    })
-  }
+  };
   return (
-    <div className="min-w-96 mx-auto">
-      <div className='w-full p-6 rounded-lg shadow-md bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-md bg-opacity-10 border border-gray-100'>
-        <h1 className='text-3xl font-bold text-center'>Signup</h1>
-        <form onSubmit={onSubmitHandler} action="">
-          <div>
-            <label className='label p-2'>
-              <span className='text-base label-text'>Full Name</span>
-            </label>
+    <>
+      <div className="flex h-screen items-center justify-center">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="border border-white px-6 py-2 rounded-md space-y-3 w-96"
+        >
+          <h1 className="text-2xl text-center">
+            Chat<span className="text-green-500 font-semibold">App</span>
+          </h1>
+          <h2 className="text-xl text-white font-bold">Signup</h2>
+          <br />
+          {/* Fullname */}
+          <label className="input input-bordered flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              className="w-4 h-4 opacity-70"
+            >
+              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
+            </svg>
             <input
-              value={user.fullName}
-              onChange={(e) => setUser({ ...user, fullName: e.target.value })}
-              className='w-full input input-bordered h-10'
               type="text"
-              placeholder='Full Name' />
-          </div>
-          <div>
-            <label className='label p-2'>
-              <span className='text-base label-text'>Username</span>
-            </label>
+              className="grow"
+              placeholder="Fullname"
+              {...register("fullname", { required: true })}
+            />
+          </label>
+          {errors.fullname && (
+            <span className="text-red-500 text-sm font-semibold">
+              This field is required
+            </span>
+          )}
+          {/* Email */}
+          <label className="input input-bordered flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              className="w-4 h-4 opacity-70"
+            >
+              <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
+              <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
+            </svg>
             <input
-              value={user.username}
-              onChange={(e) => setUser({ ...user, username: e.target.value })}
-              className='w-full input input-bordered h-10'
-              type="text"
-              placeholder='Username' />
-          </div>
-          <div>
-            <label className='label p-2'>
-              <span className='text-base label-text'>Password</span>
-            </label>
+              type="email"
+              className="grow"
+              placeholder="Email"
+              {...register("email", { required: true })}
+            />
+          </label>
+          {errors.email && (
+            <span className="text-red-500 text-sm font-semibold">
+              This field is required
+            </span>
+          )}
+
+          {/* Password */}
+          <label className="input input-bordered flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              className="w-4 h-4 opacity-70"
+            >
+              <path
+                fillRule="evenodd"
+                d="M14 6a4 4 0 0 1-4.899 3.899l-1.955 1.955a.5.5 0 0 1-.353.146H5v1.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2.293a.5.5 0 0 1 .146-.353l3.955-3.955A4 4 0 1 1 14 6Zm-4-2a.75.75 0 0 0 0 1.5.5.5 0 0 1 .5.5.75.75 0 0 0 1.5 0 2 2 0 0 0-2-2Z"
+                clipRule="evenodd"
+              />
+            </svg>
             <input
-              value={user.password}
-              onChange={(e) => setUser({ ...user, password: e.target.value })}
-              className='w-full input input-bordered h-10'
               type="password"
-              placeholder='Password' />
-          </div>
-          <div>
-            <label className='label p-2'>
-              <span className='text-base label-text'>Confirm Password</span>
-            </label>
+              className="grow"
+              placeholder="password"
+              {...register("password", { required: true })}
+            />
+          </label>
+          {errors.password && (
+            <span className="text-red-500 text-sm font-semibold">
+              This field is required
+            </span>
+          )}
+
+          {/*Confirm Password */}
+          <label className="input input-bordered flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              className="w-4 h-4 opacity-70"
+            >
+              <path
+                fillRule="evenodd"
+                d="M14 6a4 4 0 0 1-4.899 3.899l-1.955 1.955a.5.5 0 0 1-.353.146H5v1.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2.293a.5.5 0 0 1 .146-.353l3.955-3.955A4 4 0 1 1 14 6Zm-4-2a.75.75 0 0 0 0 1.5.5.5 0 0 1 .5.5.75.75 0 0 0 1.5 0 2 2 0 0 0-2-2Z"
+                clipRule="evenodd"
+              />
+            </svg>
             <input
-              value={user.confirmPassword}
-              onChange={(e) => setUser({ ...user, confirmPassword: e.target.value })}
-              className='w-full input input-bordered h-10'
               type="password"
-              placeholder='Confirm Password' />
-          </div>
-          <div className='flex items-center my-4'>
-            <div className='flex items-center'>
-              <p>Male</p>
-              <input
-                type="checkbox"
-                checked={user.gender === "male"}
-                onChange={() => handleCheckbox("male")}
-                defaultChecked
-                className="checkbox mx-2" />
-            </div>
-            <div className='flex items-center'>
-              <p>Female</p>
-              <input
-                type="checkbox"
-                checked={user.gender === "female"}
-                onChange={() => handleCheckbox("female")}
-                defaultChecked
-                className="checkbox mx-2" />
-            </div>
-          </div>
-          <p className='text-center my-2'>Already have an account? <Link to="/login"> login </Link></p>
-          <div>
-            <button type='submit' className='btn btn-block btn-sm mt-2 border border-slate-700'>Singup</button>
+              className="grow"
+              placeholder="confirm password"
+              {...register("confirmPassword", {
+                required: true,
+                validate: validatePasswordMatch,
+              })}
+            />
+          </label>
+          {errors.confirmPassword && (
+            <span className="text-red-500 text-sm font-semibold">
+              {errors.confirmPassword.message}
+            </span>
+          )}
+
+          {/* Text & Button */}
+          <div className="flex justify-between">
+            <p>
+              Have an account?
+              <Link
+                to="/login"
+                className="text-blue-500 underline cursor-pointer ml-1"
+              >
+                Login
+              </Link>
+            </p>
+            <input
+              type="submit"
+              value="Signup"
+              className="text-white bg-green-500 px-2 py-1 cursor-pointer rounded-lg"
+            />
           </div>
         </form>
       </div>
-    </div>
-  )
+    </>
+  );
 }
 
-export default Signup
+export default Signup;

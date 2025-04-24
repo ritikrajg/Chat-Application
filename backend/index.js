@@ -1,43 +1,42 @@
-// const express = require('express')// method-1
-import express from "express"; // method-2
-import dotenv from "dotenv"; 
-import connectDB from "./config/database.js";
-import userRoute from "./routes/userRoute.js";
-import messageRoute from "./routes/messageRoute.js";
-import cookieParser from "cookie-parser";
+import express from "express";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
 import cors from "cors";
-import { app,server } from "./socket/socket.js";
+import cookieParser from "cookie-parser";
 import path from "path";
-import { fileURLToPath } from 'url';
-dotenv.config({});
+import userRoute from "./routes/user.route.js";
+import messageRoute from "./routes/message.route.js";
+import { app, server } from "./SocketIO/server.js";
 
- 
-const PORT = process.env.PORT || 5000;
+dotenv.config();
 
 // middleware
-app.use(express.urlencoded({extended:true}));
-app.use(express.json()); 
+app.use(express.json());
 app.use(cookieParser());
-const corsOption={
-    origin:'https://chat-application-tjj7.onrender.com',
-    credentials:true
-};
-app.use(cors(corsOption)); 
+app.use(cors());
 
+const PORT = process.env.PORT || 4001;
+const URI = process.env.MONGODB_URI;
 
-// routes
-app.use("/api/v1/user",userRoute); 
-app.use("/api/v1/message",messageRoute);
- 
-if(process.env.NODE_ENV === "production"){
-    const dirPath=path.resolve();
-    app.use(express.static("./frontend/dist"));
-    app.get("*",(req,res)=>{
-        res.sendFile(path.resolve(dirPath,"./frontend/dist/","index.html"));
-    })
+try {
+  mongoose.connect(URI);
+  console.log("Connected to MongoDB");
+} catch (error) {
+  console.log(error);
 }
-server.listen(PORT, ()=>{
-    connectDB();
-    console.log(`Server listen at prot ${PORT}`);
-});
 
+//routes
+app.use("/api/user", userRoute);
+app.use("/api/message", messageRoute);
+
+//-------------- code for deployment --------------
+if (process.env.NODE_ENV === "production") {
+  const dirPath = path.resolve();
+  app.use(express.static("./Frontend/dist"))
+  app.get("*",(req,res)=>{
+    res.sendFile(path.resolve(dirPath,"./Frontend/dist","index.html"))
+  })
+}
+server.listen(PORT, () => {
+  console.log(`Server is Running on port ${PORT}`);
+});
