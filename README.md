@@ -2,6 +2,8 @@
 
 A real-time chat application built with React, Node.js, Express, and Socket.IO.
 
+https://chat-application-ugcz.onrender.com
+
 ## Features
 
 - Real-time messaging using Socket.IO
@@ -130,4 +132,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 
-Project Link: [https://github.com/ritikrajg/chat-application](https://github.com/ritikrajg/chat-application)
+Project Link: [https://github.com/ritikrajg/chat-application](https://chat-application-ugcz.onrender.com)
